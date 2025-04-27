@@ -25,11 +25,20 @@
     margin: -1px;
     border-radius: 5px;
 }
-.eyes{
+
+.eyes {
     position: absolute;
     opacity: .3;
     right: 20px;
     cursor: pointer;
     z-index: 10;
     top: 8px
+}
+
+.el-input__wrapper {
+    margin: 4px 0;
+}
+
+.labeltextArea textarea {
+    resize: none;
 }

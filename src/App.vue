@@ -109,6 +109,8 @@ function deleteRow(row: TableFields) {
         <tr v-for="el in datas" @change="checkValids(el.id)">
           <td>
             <el-input
+                class="labeltextArea"
+                :type="el.label && el.label.length>30?'textarea':''"
                 :disabled="isEditMode && el.id!==newId"
                 placeholder="Введите метку" maxlength="50" v-model="el.label"/>
           </td>
