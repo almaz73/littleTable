@@ -1,50 +1,73 @@
 <script setup lang="ts">
 // @ts-ignore
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {Plus, WarningFilled, Delete} from "@element-plus/icons-vue";
 import {RecordTypes} from "@/assets/globalConstants";
 import {useLittleTableStores} from "@/store/littleTableStores";
 import {TableFields} from "@/assets/interfaces";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const isEditMode = ref(false)
 const isDirty = ref(false)
 const newId = ref<number | null>()
 const littleTableStores = useLittleTableStores()
-const datas = ref<TableFields[]>([{
-  id: 0,
-  label: 'МеткаХХХ МеткаХХХ МеткаХХХ МеткаХХХ МеткаХХХ',
-  type: 10,
-  login: 'Значение1',
-  pass: '73273'
-},
-  {id: 1, label: 'МеткаYYY', type: 20, login: 'Логин2', pass: '73273'}])
+const datas = ref<TableFields[]>([])
 
 const getLastId = function () {
   let lastId = 0
-  datas.value.forEach((el: TableFields) => lastId = el.id > lastId ? el.id : lastId)
+  datas.value && datas.value.forEach((el: TableFields) => lastId = el.id > lastId ? el.id : lastId)
   return lastId + 1
 }
 
-function checkValids() {
-  console.log('checkValids = ', checkValids)
+onMounted(() => {
+  littleTableStores.readTable().then(res => datas.value = res)
+})
 
+function checkValids(id) {
+  let record = datas.value.find((el: TableFields) => el.id == id)
+  if (record && record.q_Login && record.q_Pass) {
+    littleTableStores.saveTable(record).then(res => {
+      console.log('? ? ? ? res = ',res)
+      ElMessage.success('Изменения сохранены!')
+      initState()
+    })
+
+  }
   isDirty.value = true
 }
 
+function initState() {
+  newId.value = null
+  isDirty.value = false
+  isEditMode.value = false
+}
+
 function addRow() {
+  isDirty.value = false
   newId.value = getLastId()
-  datas.value.push({id: newId.value, label: '', type: null, login: '', pass: ''})
+  let newRow = {id: newId.value, label: '', type: null, q_Login: '', q_Pass: ''}
+  if (datas.value) datas.value.push(newRow)
+  else datas.value = [newRow]
   isEditMode.value = true
 }
 
 function deleteRow(row: TableFields) {
-  if (isEditMode.value && newId.value == row.id) {
-    newId.value = null
-    isDirty.value = false
-    isEditMode.value = false
-  }
+  ElMessageBox.confirm('Вы действительно хотите удалить?', 'Внимание', {
+    confirmButtonText: 'Да',
+    cancelButtonText: 'Нет'
+  })
+      .then(res => {
+        console.log('res = ', res)
+        if (isEditMode.value && newId.value == row.id) {
+          initState()
 
-  datas.value = datas.value.filter(el => el.id !== row.id)
+        }
+
+        datas.value = datas.value.filter(el => el.id !== row.id)
+        littleTableStores.deleteRow(datas.value)
+      })
+      .catch(() => {
+      })
 }
 
 </script>
@@ -80,13 +103,13 @@ function deleteRow(row: TableFields) {
           <th>
           </th>
         </tr>
-        <tr v-for="el in datas" @change="checkValids()">
+        <tr v-for="el in datas" @change="checkValids(el.id)">
           <td>
             <el-input placeholder="Введите метку" maxlength="50" v-model="el.label"/>
           </td>
           <td>
             <el-select
-                @change="checkValids()"
+                @change="checkValids(el.id)"
                 placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
                 v-model="el.type"
@@ -96,15 +119,18 @@ function deleteRow(row: TableFields) {
           </td>
           <td>
             <el-input
-                :class="{err: !el.pass && isDirty}"
+                :class="{err: !el.q_Pass && isDirty && !el.q_Login}"
                 placeholder="Введите логин"
-                maxlength="100" v-model="el.login"/>
+                autocomplete="off"
+                maxlength="100" v-model="el.q_Login"/>
           </td>
           <td>
             <el-input
-                :class="{err: !el.pass && isDirty}"
+                :class="{err: !el.q_Pass && isDirty && !el.q_Pass}"
                 placeholder="Введите парль"
-                maxlength="100" v-model="el.pass"/>
+                autocomplete="off"
+                type="q_Password"
+                maxlength="100" v-model="el.q_Pass"/>
           </td>
           <td style="width: 30px">
             <el-icon style="cursor: pointer">
@@ -116,7 +142,9 @@ function deleteRow(row: TableFields) {
 
       </table>
 
-      <div style="text-align: right">
+      <div style="text-align: center; color: #999" v-if="!datas || !datas.length"> Нет данных</div>
+
+      <div style="text-align: right; opacity: 0.2" title="По заданию этого не надо.">
         <el-button v-if="isDirty && isEditMode" type="success" :icon="Plus"> Сохранить изменения</el-button>
         <el-button v-if="isDirty&& isEditMode" type="danger" @click="deleteRow({id:newId})"> Отмена</el-button>
       </div>

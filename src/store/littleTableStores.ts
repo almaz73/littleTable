@@ -5,16 +5,25 @@ interface TableFields {
     id: number,
     label?: string,
     type: number | null;
-    login: string,
-    pass: string,
+    q_Login: string,
+    q_Pass: string,
 }
 
 function imitationServerGet() {
-    return localStorage.getItem('littleTable')
+    let old:string|null = localStorage.getItem('littleTable')
+    return JSON.parse(old)
 }
 
-function imitationServerPut(text: string) {
-    return localStorage.setItem('littleTable', text)
+function imitationServerPut(obj: TableFields) {
+    // получаем старый массив, добавляем к нему строку и сохраянем вместе
+    let old = imitationServerGet()
+    let newTable = old || []
+    newTable.push(obj)
+    return localStorage.setItem('littleTable', JSON.stringify(newTable))
+}
+
+function imitationServerDelete(obj: TableFields[]) {
+    localStorage.setItem('littleTable', JSON.stringify(obj))
 }
 
 export const useLittleTableStores = defineStore("littleTableStores", {
@@ -23,16 +32,13 @@ export const useLittleTableStores = defineStore("littleTableStores", {
     }),
     actions: {
         async readTable() {
-            const res = await imitationServerGet()
-            return res ? JSON.parse(res) : []
+            return await imitationServerGet()
         },
         async saveTable(row: TableFields) {
-            console.log('row = ', row)
-            const res: any = await imitationServerPut(JSON.stringify(row))
-            return res
+            return await imitationServerPut(row)
         },
-        async deleteRow() {
-
+        async deleteRow(datas:TableFields[]) {
+            imitationServerDelete(datas)
         },
     }
 })

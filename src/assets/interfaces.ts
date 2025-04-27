@@ -2,6 +2,6 @@ export interface TableFields {
     id: number,
     label?: string,
     type: number|null;
-    login: string,
-    pass: string,
+    q_Login: string,
+    q_Pass: string,
 }
