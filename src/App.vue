@@ -133,24 +133,26 @@ function deleteRow(row: TableFields) {
                 autocomplete="off"
                 maxlength="100" v-model="el.login"/>
           </td>
-          <td style="position: relative" v-if="el.type!==10">
-            <el-input
-                :disabled="isEditMode && el.id!==newId"
-                :class="{err: !el.pass && isDirty && !el.pass}"
-                placeholder="Введите парль"
-                autocomplete="false"
-                readonly
-                onfocus="this.removeAttribute('readonly');"
-                :type="passView!==el.id?'password':''"
-                maxlength="100" v-model="el.pass"/>
+          <td v-if="el.type!==10">
+            <div style="position: relative;">
+              <el-input
+                  :disabled="isEditMode && el.id!==newId"
+                  :class="{err: !el.pass && isDirty && !el.pass}"
+                  placeholder="Введите парль"
+                  autocomplete="false"
+                  readonly
+                  onfocus="this.removeAttribute('readonly');"
+                  :type="passView!==el.id?'password':''"
+                  maxlength="100" v-model="el.pass"/>
 
-            <div class="eyes">
-              <el-icon v-if="passView!==el.id" @click="passView=el.id">
-                <View/>
-              </el-icon>
-              <el-icon v-if="passView===el.id" @click="passView=null">
-                <Hide/>
-              </el-icon>
+              <div class="eyes">
+                <el-icon v-if="passView!==el.id" @click="passView=el.id">
+                  <View/>
+                </el-icon>
+                <el-icon v-if="passView===el.id" @click="passView=null">
+                  <Hide/>
+                </el-icon>
+              </div>
             </div>
           </td>
           <td style="width: 30px; text-align: right">
