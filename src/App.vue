@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // @ts-ignore
 import {onMounted, ref} from "vue";
-import {Plus, WarningFilled, Delete} from "@element-plus/icons-vue";
+import {Plus, WarningFilled, Delete, View, Hide} from "@element-plus/icons-vue";
 import {RecordTypes} from "@/assets/globalConstants";
 import {useLittleTableStores} from "@/store/littleTableStores";
 import {TableFields} from "@/assets/interfaces";
@@ -12,6 +12,7 @@ const isDirty = ref(false)
 const newId = ref<number | null>()
 const littleTableStores = useLittleTableStores()
 const datas = ref<TableFields[]>([])
+const passView = ref<number | null>(null); // id поля чтобы отобразить пароль
 
 const getLastId = function () {
   let lastId = 0
@@ -20,22 +21,15 @@ const getLastId = function () {
 }
 
 onMounted(() => {
-  littleTableStores.readTable().then(res => {
-    datas.value = res
-    console.log('res = ',res)
-  })
+  littleTableStores.readTable().then(res => datas.value = res)
 })
 
-function checkValids(id:number) {
+function checkValids(id: number) {
 
-  console.log('id = ',id)
-  
   let record = datas.value.find((el: TableFields) => el.id == id)
-  
-  console.log('record = ',record)
-  
-  if (record && record.q_Login && record.q_Pass) {
-    littleTableStores.saveTable(record).then(res => {
+
+   if (record && record.q_Login && record.q_Pass) {
+    littleTableStores.saveTable(record).then(() => {
       ElMessage.success('Изменения сохранены!')
       initState()
     })
@@ -48,14 +42,12 @@ function initState() {
   newId.value = null
   isDirty.value = false
   isEditMode.value = false
+  passView.value = null
 }
 
 function addRow() {
   isDirty.value = false
   newId.value = getLastId()
-  
-  console.log('newId.value = ',newId.value)
-  
   let newRow = {id: newId.value, label: '', type: null, q_Login: '', q_Pass: ''}
   if (datas.value) datas.value.push(newRow)
   else datas.value = [newRow]
@@ -67,12 +59,8 @@ function deleteRow(row: TableFields) {
     confirmButtonText: 'Да',
     cancelButtonText: 'Нет'
   })
-      .then(res => {
-        console.log('res = ', res)
-        if (isEditMode.value && newId.value == row.id) {
-          initState()
-
-        }
+      .then(() => {
+        if (isEditMode.value && newId.value == row.id) initState()
 
         datas.value = datas.value.filter(el => el.id !== row.id)
         littleTableStores.deleteRow(datas.value)
@@ -117,12 +105,12 @@ function deleteRow(row: TableFields) {
         <tr v-for="el in datas" @change="checkValids(el.id)">
           <td>
             <el-input
-                :disabled="isEditMode && el.id!=newId"
+                :disabled="isEditMode && el.id!==newId"
                 placeholder="Введите метку" maxlength="50" v-model="el.label"/>
           </td>
           <td>
             <el-select
-                :disabled="isEditMode && el.id!=newId"
+                :disabled="isEditMode && el.id!==newId"
                 @change="checkValids(el.id)"
                 placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
@@ -133,20 +121,31 @@ function deleteRow(row: TableFields) {
           </td>
           <td>
             <el-input
-                :disabled="isEditMode && el.id!=newId"
+                :disabled="isEditMode && el.id!==newId"
                 :class="{err: !el.q_Pass && isDirty && !el.q_Login}"
                 placeholder="Введите логин"
                 autocomplete="off"
                 maxlength="100" v-model="el.q_Login"/>
           </td>
-          <td>
+          <td style="position: relative">
             <el-input
-                :disabled="isEditMode && el.id!=newId"
+                :disabled="isEditMode && el.id!==newId"
                 :class="{err: !el.q_Pass && isDirty && !el.q_Pass}"
                 placeholder="Введите парль"
-                autocomplete="off"
-                type="q_Password"
+                autocomplete="false"
+                readonly
+                onfocus="this.removeAttribute('readonly');"
+                :type="passView!==el.id?'password':''"
                 maxlength="100" v-model="el.q_Pass"/>
+
+            <div class="eyes">
+              <el-icon v-if="passView!==el.id" @click="passView=el.id">
+                <View/>
+              </el-icon>
+              <el-icon v-if="passView===el.id" @click="passView=null">
+                <Hide/>
+              </el-icon>
+            </div>
           </td>
           <td style="width: 30px">
             <el-icon style="cursor: pointer">

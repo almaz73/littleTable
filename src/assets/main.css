@@ -25,3 +25,11 @@
     margin: -1px;
     border-radius: 5px;
 }
+.eyes{
+    position: absolute;
+    opacity: .3;
+    right: 20px;
+    cursor: pointer;
+    z-index: 10;
+    top: 8px
+}
