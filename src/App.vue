@@ -96,25 +96,16 @@ function deleteRow(row: TableFields) {
         <el-icon>
           <WarningFilled/>
         </el-icon>
-        Для уазания нескольких меток для одной пары логин/пароль используйте разделитель ;
+        Для уазания нескольких меток для одной пары логин/пароль используйте разделитель " ; "
       </div>
 
       <table class="table">
         <tr>
-          <th>
-            Метки
-          </th>
-          <th>
-            Тип записи
-          </th>
-          <th>
-            Логин
-          </th>
-          <th>
-            Парлоь
-          </th>
-          <th>
-          </th>
+          <th> Метки</th>
+          <th> Тип записи</th>
+          <th> Логин</th>
+          <th> Парлоь</th>
+          <th></th>
         </tr>
         <tr v-for="el in datas" @change="checkValids(el.id)">
           <td>
@@ -177,9 +168,17 @@ function deleteRow(row: TableFields) {
 
       <div style="text-align: center; color: #999" v-if="!datas || !datas.length"> Нет данных</div>
 
-      <div style="text-align: right; opacity: 0.2" title="По заданию этого не надо.">
-        <el-button v-if="isDirty && isEditMode" type="success" :icon="Plus"> Сохранить изменения</el-button>
-        <el-button v-if="isDirty&& isEditMode" type="danger" @click="deleteRow({id:newId})"> Отмена</el-button>
+      <!--      <div style="text-align: right; opacity: 0.2" title="По заданию этого не надо.">-->
+      <!--        <el-button v-if="isDirty && isEditMode" type="success" :icon="Plus"> Сохранить изменения</el-button>-->
+      <!--        <el-button v-if="isDirty&& isEditMode" type="danger" @click="deleteRow({id:newId})"> Отмена</el-button>-->
+      <!--      </div>-->
+
+      <br>
+      <div style="font-family: Verdana, Arial">
+        Данные сохраняются в localStorage.<br>
+        В Pinia происходит имитация ассинхронного обращения к серверу.<br>
+        В консоле выводится визуализация получаемых и отправляемых данных.<br>
+        Не было сказано редактируются ли уже сохраненные поля - тут редактируются
       </div>
 
     </div>
