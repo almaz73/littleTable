@@ -15,11 +15,24 @@ function imitationServerGet() {
 }
 
 function imitationServerPut(obj: TableFields) {
+    
+    console.log('obj = ',obj)
     // получаем старый массив, добавляем к нему строку и сохраянем вместе
     let old = imitationServerGet()
     let newTable = old || []
-    newTable.push(obj)
-    return localStorage.setItem('littleTable', JSON.stringify(newTable))
+
+    let row = old && old.find((el: TableFields) => el.id == obj.id)
+    console.log('row = ', row)
+
+    if (!row) newTable.push(obj)
+    else newTable = newTable.map((el: TableFields) => {
+        if (el.id == obj.id) el = obj
+        return el
+    })
+    
+    console.log('newTable = ',newTable)
+
+    localStorage.setItem('littleTable', JSON.stringify(newTable))
 }
 
 function imitationServerDelete(obj: TableFields[]) {

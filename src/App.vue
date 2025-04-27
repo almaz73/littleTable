@@ -20,14 +20,22 @@ const getLastId = function () {
 }
 
 onMounted(() => {
-  littleTableStores.readTable().then(res => datas.value = res)
+  littleTableStores.readTable().then(res => {
+    datas.value = res
+    console.log('res = ',res)
+  })
 })
 
-function checkValids(id) {
+function checkValids(id:number) {
+
+  console.log('id = ',id)
+  
   let record = datas.value.find((el: TableFields) => el.id == id)
+  
+  console.log('record = ',record)
+  
   if (record && record.q_Login && record.q_Pass) {
     littleTableStores.saveTable(record).then(res => {
-      console.log('? ? ? ? res = ',res)
       ElMessage.success('Изменения сохранены!')
       initState()
     })
@@ -45,6 +53,9 @@ function initState() {
 function addRow() {
   isDirty.value = false
   newId.value = getLastId()
+  
+  console.log('newId.value = ',newId.value)
+  
   let newRow = {id: newId.value, label: '', type: null, q_Login: '', q_Pass: ''}
   if (datas.value) datas.value.push(newRow)
   else datas.value = [newRow]
@@ -105,10 +116,13 @@ function deleteRow(row: TableFields) {
         </tr>
         <tr v-for="el in datas" @change="checkValids(el.id)">
           <td>
-            <el-input placeholder="Введите метку" maxlength="50" v-model="el.label"/>
+            <el-input
+                :disabled="isEditMode && el.id!=newId"
+                placeholder="Введите метку" maxlength="50" v-model="el.label"/>
           </td>
           <td>
             <el-select
+                :disabled="isEditMode && el.id!=newId"
                 @change="checkValids(el.id)"
                 placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
@@ -119,6 +133,7 @@ function deleteRow(row: TableFields) {
           </td>
           <td>
             <el-input
+                :disabled="isEditMode && el.id!=newId"
                 :class="{err: !el.q_Pass && isDirty && !el.q_Login}"
                 placeholder="Введите логин"
                 autocomplete="off"
@@ -126,6 +141,7 @@ function deleteRow(row: TableFields) {
           </td>
           <td>
             <el-input
+                :disabled="isEditMode && el.id!=newId"
                 :class="{err: !el.q_Pass && isDirty && !el.q_Pass}"
                 placeholder="Введите парль"
                 autocomplete="off"
