@@ -1,0 +1,16 @@
+
+.content{
+    width: 900px;
+    margin: auto;
+}
+.notice{
+    background: #eef4fa;
+    padding: 8px 20px;
+}
+.table{
+    width: 100%;
+    margin: 30px 0;
+}
+.table th{
+    color: #aaa;
+}
