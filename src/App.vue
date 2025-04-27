@@ -21,7 +21,12 @@ const getLastId = function () {
 }
 
 onMounted(() => {
-  littleTableStores.readTable().then(res => datas.value = res)
+  littleTableStores.readTable().then(res => {
+    datas.value = res.map((el: TableFields) => {
+      if (el.labelArr) el.label = el.labelArr.join('; ')
+      return el
+    })
+  })
 })
 
 function typeChanged(row: TableFields) {
@@ -32,6 +37,7 @@ function typeChanged(row: TableFields) {
 function checkValids(id: number) {
 
   let record = datas.value.find((el: TableFields) => el.id == id)
+  if (record && record.label) record.labelArr = record.label.split(';')
 
   if (record && record.login && (((record.type == 20 || !record.type) && record.pass) || record.type == 10)) {
     littleTableStores.saveTable(record).then(() => {
@@ -79,8 +85,12 @@ function deleteRow(row: TableFields) {
   <div class="content">
     <div>
       <h3>Учетные записи
-        <el-button :disabled="isEditMode" style="height: 40px; margin-left: 10px" :icon="Plus"
-                   @click="addRow()"></el-button>
+        <el-button
+            size="large"
+            :disabled="isEditMode"
+            style="margin-left: 10px; padding: 8px 14px" :icon="Plus"
+            @click="addRow()">
+        </el-button>
       </h3>
       <div class="notice">
         <el-icon>
@@ -112,13 +122,13 @@ function deleteRow(row: TableFields) {
                 class="labeltextArea"
                 :type="el.label && el.label.length>30?'textarea':''"
                 :disabled="isEditMode && el.id!==newId"
-                placeholder="Введите метку" maxlength="50" v-model="el.label"/>
+                placeholder="метка" maxlength="50" v-model="el.label"/>
           </td>
           <td>
             <el-select
                 :disabled="isEditMode && el.id!==newId"
                 @change="typeChanged(el)"
-                placeholder="Введите тип"
+                placeholder="тип"
                 style="width: 150px; margin-right: -26px"
                 v-model="el.type"
             >
@@ -155,8 +165,8 @@ function deleteRow(row: TableFields) {
               </div>
             </div>
           </td>
-          <td style="width: 30px; text-align: right">
-            <el-icon style="cursor: pointer">
+          <td style="width: 20px; text-align: right; opacity: 0.5">
+            <el-icon style="cursor: pointer" size="large">
               <Delete @click="deleteRow(el)"/>
             </el-icon>
           </td>

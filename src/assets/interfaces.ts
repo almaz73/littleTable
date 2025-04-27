@@ -1,7 +1,8 @@
 export interface TableFields {
     id: number,
     label?: string,
-    type: number|null;
+    labelArr?: string[],
+    type?: number;
     login: string,
     pass: string,
 }

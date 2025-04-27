@@ -1,36 +1,34 @@
 import {defineStore} from "pinia";
+
 // import {TableFields} from "@/assets/interfaces"; // нужно разобраться, почему не импортирует
 
 interface TableFields {
     id: number,
     label?: string,
-    type: number | null;
+    labelArr?: string[],
+    type?: number;
     login: string,
     pass: string,
 }
 
 function imitationServerGet() {
-    let old:string|null = localStorage.getItem('littleTable')
+    // @ts-ignore
+    let old: string = localStorage.getItem('littleTable')
     return JSON.parse(old)
 }
 
 function imitationServerPut(obj: TableFields) {
-    
-    console.log('obj = ',obj)
     // получаем старый массив, добавляем к нему строку и сохраянем вместе
     let old = imitationServerGet()
     let newTable = old || []
 
     let row = old && old.find((el: TableFields) => el.id == obj.id)
-    console.log('row = ', row)
 
     if (!row) newTable.push(obj)
     else newTable = newTable.map((el: TableFields) => {
         if (el.id == obj.id) el = obj
         return el
     })
-    
-    console.log('newTable = ',newTable)
 
     localStorage.setItem('littleTable', JSON.stringify(newTable))
 }
@@ -45,12 +43,16 @@ export const useLittleTableStores = defineStore("littleTableStores", {
     }),
     actions: {
         async readTable() {
-            return await imitationServerGet()
+            let row = await imitationServerGet()
+            console.log('%cОтвет от сервера = ' + JSON.stringify(row), 'background:pink; color: black')
+            return row
         },
         async saveTable(row: TableFields) {
+            delete row.label
+            console.log('%cУходит на сервер = ' + JSON.stringify(row), 'background:green')
             return await imitationServerPut(row)
         },
-        async deleteRow(datas:TableFields[]) {
+        async deleteRow(datas: TableFields[]) {
             imitationServerDelete(datas)
         },
     }
