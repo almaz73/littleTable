@@ -3,19 +3,31 @@
 import {ref} from "vue";
 import {Plus, WarningFilled, Delete} from "@element-plus/icons-vue";
 import {RecordTypes} from "@/assets/globalConstants";
+import {useLittleTableStores} from "@/store/littleTableStores";
+import {TableFields} from "@/assets/interfaces";
 
-interface Fields {
-  id: number,
-  label?: string,
-  type: number;
-  login: string,
-  pass: string,
-}
 
-const datas = ref<Fields[]>([{id: 0, label: 'МеткаХХХ', type: 10, login: 'Значение1', pass: '73273'},
+const littleTableStores = useLittleTableStores()
+const datas = ref<TableFields[]>([{
+  id: 0,
+  label: 'МеткаХХХ МеткаХХХ МеткаХХХ МеткаХХХ МеткаХХХ',
+  type: 10,
+  login: 'Значение1',
+  pass: '73273'
+},
   {id: 1, label: 'МеткаYYY', type: 20, login: 'Логин2', pass: '73273'}])
 
-function deleteRow(row: Fields) {
+const getLastId = function () {
+  let lastId = 0
+  datas.value.forEach((el: TableFields) => lastId = el.id > lastId ? el.id : lastId)
+  return lastId
+}
+
+function addRow() {
+  datas.value.push({id: getLastId() + 1, label: '', type: null, login: '', pass: ''})
+}
+
+function deleteRow(row: TableFields) {
   datas.value = datas.value.filter(el => el.id !== row.id)
 }
 
@@ -25,7 +37,7 @@ function deleteRow(row: Fields) {
   <div class="content">
     <div>
       <h3>Учеьтные записи
-        <el-button style="height: 40px; margin-left: 10px" :icon="Plus"></el-button>
+        <el-button style="height: 40px; margin-left: 10px" :icon="Plus" @click="addRow()"></el-button>
       </h3>
       <div class="notice">
         <el-icon>
@@ -53,12 +65,12 @@ function deleteRow(row: Fields) {
         </tr>
         <tr v-for="el in datas">
           <td>
-            <el-input v-model="el.label"/>
+            <el-input placeholder="Введите метку" v-model="el.label"/>
           </td>
           <td>
             <el-select
+                placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
-                placeholder="Выберите бренд"
                 v-model="el.type"
             >
               <el-option v-for="type in RecordTypes" :key="type.id" :label="type.name" :value="type.id"/>
@@ -66,10 +78,14 @@ function deleteRow(row: Fields) {
 
           </td>
           <td>
-            <el-input maxlength="100" v-model="el.login"/>
+            <el-input
+                placeholder="Введите логин"
+                maxlength="100" v-model="el.login"/>
           </td>
           <td>
-            <el-input maxlength="100" v-model="el.pass"/>
+            <el-input
+                placeholder="Введите парль"
+                maxlength="100" v-model="el.pass"/>
           </td>
           <td style="width: 30px">
             <el-icon style="cursor: pointer">

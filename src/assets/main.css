@@ -13,4 +13,6 @@
 }
 .table th{
     color: #aaa;
+    text-align: left;
+    font-weight: normal;
 }
