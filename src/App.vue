@@ -6,7 +6,9 @@ import {RecordTypes} from "@/assets/globalConstants";
 import {useLittleTableStores} from "@/store/littleTableStores";
 import {TableFields} from "@/assets/interfaces";
 
-
+const isEditMode = ref(false)
+const isDirty = ref(false)
+const newId = ref<number | null>()
 const littleTableStores = useLittleTableStores()
 const datas = ref<TableFields[]>([{
   id: 0,
@@ -20,14 +22,28 @@ const datas = ref<TableFields[]>([{
 const getLastId = function () {
   let lastId = 0
   datas.value.forEach((el: TableFields) => lastId = el.id > lastId ? el.id : lastId)
-  return lastId
+  return lastId + 1
+}
+
+function checkValids() {
+  console.log('checkValids = ', checkValids)
+
+  isDirty.value = true
 }
 
 function addRow() {
-  datas.value.push({id: getLastId() + 1, label: '', type: null, login: '', pass: ''})
+  newId.value = getLastId()
+  datas.value.push({id: newId.value, label: '', type: null, login: '', pass: ''})
+  isEditMode.value = true
 }
 
 function deleteRow(row: TableFields) {
+  if (isEditMode.value && newId.value == row.id) {
+    newId.value = null
+    isDirty.value = false
+    isEditMode.value = false
+  }
+
   datas.value = datas.value.filter(el => el.id !== row.id)
 }
 
@@ -36,8 +52,9 @@ function deleteRow(row: TableFields) {
 <template>
   <div class="content">
     <div>
-      <h3>Учеьтные записи
-        <el-button style="height: 40px; margin-left: 10px" :icon="Plus" @click="addRow()"></el-button>
+      <h3>Учетные записи
+        <el-button :disabled="isEditMode" style="height: 40px; margin-left: 10px" :icon="Plus"
+                   @click="addRow()"></el-button>
       </h3>
       <div class="notice">
         <el-icon>
@@ -63,27 +80,29 @@ function deleteRow(row: TableFields) {
           <th>
           </th>
         </tr>
-        <tr v-for="el in datas">
+        <tr v-for="el in datas" @change="checkValids()">
           <td>
-            <el-input placeholder="Введите метку" v-model="el.label"/>
+            <el-input placeholder="Введите метку" maxlength="50" v-model="el.label"/>
           </td>
           <td>
             <el-select
+                @change="checkValids()"
                 placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
                 v-model="el.type"
             >
               <el-option v-for="type in RecordTypes" :key="type.id" :label="type.name" :value="type.id"/>
             </el-select>
-
           </td>
           <td>
             <el-input
+                :class="{err: !el.pass && isDirty}"
                 placeholder="Введите логин"
                 maxlength="100" v-model="el.login"/>
           </td>
           <td>
             <el-input
+                :class="{err: !el.pass && isDirty}"
                 placeholder="Введите парль"
                 maxlength="100" v-model="el.pass"/>
           </td>
@@ -96,6 +115,11 @@ function deleteRow(row: TableFields) {
 
 
       </table>
+
+      <div style="text-align: right">
+        <el-button v-if="isDirty && isEditMode" type="success" :icon="Plus"> Сохранить изменения</el-button>
+        <el-button v-if="isDirty&& isEditMode" type="danger" @click="deleteRow({id:newId})"> Отмена</el-button>
+      </div>
 
     </div>
   </div>
