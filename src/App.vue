@@ -24,16 +24,20 @@ onMounted(() => {
   littleTableStores.readTable().then(res => datas.value = res)
 })
 
+function typeChanged(row: TableFields) {
+  row.pass = ''
+  checkValids(row.id)
+}
+
 function checkValids(id: number) {
 
   let record = datas.value.find((el: TableFields) => el.id == id)
 
-   if (record && record.q_Login && record.q_Pass) {
+  if (record && record.login && (((record.type == 20 || !record.type) && record.pass) || record.type == 10)) {
     littleTableStores.saveTable(record).then(() => {
       ElMessage.success('Изменения сохранены!')
       initState()
     })
-
   }
   isDirty.value = true
 }
@@ -48,7 +52,7 @@ function initState() {
 function addRow() {
   isDirty.value = false
   newId.value = getLastId()
-  let newRow = {id: newId.value, label: '', type: null, q_Login: '', q_Pass: ''}
+  let newRow = {id: newId.value, label: '', type: null, login: '', pass: ''}
   if (datas.value) datas.value.push(newRow)
   else datas.value = [newRow]
   isEditMode.value = true
@@ -111,7 +115,7 @@ function deleteRow(row: TableFields) {
           <td>
             <el-select
                 :disabled="isEditMode && el.id!==newId"
-                @change="checkValids(el.id)"
+                @change="typeChanged(el)"
                 placeholder="Введите тип"
                 style="width: 150px; margin-right: -26px"
                 v-model="el.type"
@@ -119,24 +123,24 @@ function deleteRow(row: TableFields) {
               <el-option v-for="type in RecordTypes" :key="type.id" :label="type.name" :value="type.id"/>
             </el-select>
           </td>
-          <td>
+          <td :colspan="el.type===10?2:1">
             <el-input
                 :disabled="isEditMode && el.id!==newId"
-                :class="{err: !el.q_Pass && isDirty && !el.q_Login}"
+                :class="{err: !el.pass && isDirty && !el.login}"
                 placeholder="Введите логин"
                 autocomplete="off"
-                maxlength="100" v-model="el.q_Login"/>
+                maxlength="100" v-model="el.login"/>
           </td>
-          <td style="position: relative">
+          <td style="position: relative" v-if="el.type!==10">
             <el-input
                 :disabled="isEditMode && el.id!==newId"
-                :class="{err: !el.q_Pass && isDirty && !el.q_Pass}"
+                :class="{err: !el.pass && isDirty && !el.pass}"
                 placeholder="Введите парль"
                 autocomplete="false"
                 readonly
                 onfocus="this.removeAttribute('readonly');"
                 :type="passView!==el.id?'password':''"
-                maxlength="100" v-model="el.q_Pass"/>
+                maxlength="100" v-model="el.pass"/>
 
             <div class="eyes">
               <el-icon v-if="passView!==el.id" @click="passView=el.id">
@@ -147,7 +151,7 @@ function deleteRow(row: TableFields) {
               </el-icon>
             </div>
           </td>
-          <td style="width: 30px">
+          <td style="width: 30px; text-align: right">
             <el-icon style="cursor: pointer">
               <Delete @click="deleteRow(el)"/>
             </el-icon>
